@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.Keys;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
@@ -38,6 +39,8 @@ import org.b3log.solo.model.Page;
 import org.b3log.solo.repository.ArticleRepository;
 import org.b3log.solo.repository.CommentRepository;
 import org.b3log.solo.repository.PageRepository;
+import org.b3log.solo.util.Emotions;
+import org.b3log.solo.util.Markdowns;
 import org.b3log.solo.util.Thumbnails;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,7 +49,7 @@ import org.json.JSONObject;
  * Comment query service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.7, Dec 19, 2015
+ * @version 1.3.0.8, Jun 28, 2016
  * @since 0.3.5
  */
 @Service
@@ -189,6 +192,11 @@ public class CommentQueryService {
 
                 comment.put(Common.COMMENT_TITLE, title);
 
+                String commentContent = comment.optString(Comment.COMMENT_CONTENT);
+                commentContent = Emotions.convert(commentContent);
+                commentContent = Markdowns.toHTML(commentContent);
+                comment.put(Comment.COMMENT_CONTENT, commentContent);
+
                 comment.put(Comment.COMMENT_TIME, ((Date) comment.get(Comment.COMMENT_DATE)).getTime());
                 comment.remove(Comment.COMMENT_DATE);
             }
@@ -227,7 +235,11 @@ public class CommentQueryService {
             for (final JSONObject comment : comments) {
                 comment.put(Comment.COMMENT_TIME, ((Date) comment.get(Comment.COMMENT_DATE)).getTime());
                 comment.put(Comment.COMMENT_NAME, comment.getString(Comment.COMMENT_NAME));
-                comment.put(Comment.COMMENT_URL, comment.getString(Comment.COMMENT_URL));
+                String url = comment.getString(Comment.COMMENT_URL);
+                if (StringUtils.contains(url, "<")) { // legacy issue https://github.com/b3log/solo/issues/12091
+                    url = "";
+                }
+                comment.put(Comment.COMMENT_URL, url);
                 comment.put(Common.IS_REPLY, false); // Assumes this comment is not a reply
 
                 final String email = comment.optString(Comment.COMMENT_EMAIL);
@@ -238,6 +250,11 @@ public class CommentQueryService {
                     // This comment is a reply
                     comment.put(Common.IS_REPLY, true);
                 }
+
+                String commentContent = comment.optString(Comment.COMMENT_CONTENT);
+                commentContent = Emotions.convert(commentContent);
+                commentContent = Markdowns.toHTML(commentContent);
+                comment.put(Comment.COMMENT_CONTENT, commentContent);
 
                 ret.add(comment);
             }

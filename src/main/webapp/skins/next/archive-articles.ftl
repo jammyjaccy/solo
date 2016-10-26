@@ -8,19 +8,25 @@
         </@head>
     </head>
     <body>
-        <#include "side.ftl">
-        <main>
-            <h2 class="classify-name">
-                ${archive1Label}
-                <#if "en" == localeString?substring(0, 2)>
-                ${archiveDate.archiveDateMonth} ${archiveDate.archiveDateYear} (${archiveDate.archiveDatePublishedArticleCount})
-                <#else>
-                ${archiveDate.archiveDateYear} ${yearLabel} ${archiveDate.archiveDateMonth} ${monthLabel} (${archiveDate.archiveDatePublishedArticleCount})
-                </#if>
-            </h2>
-            <#include "article-list.ftl">
-            <#include "footer.ftl">
+        <#include "header.ftl">
+        <main class="main wrapper">
+            <div class="content page-archive">
+                <section class="posts-collapse">
+                    <span class="archive-move-on"></span>
+                    <span class="archive-page-counter">
+                      ${ohLabel}..! 
+                        <#if "en" == localeString?substring(0, 2)>
+                        ${archiveDate.archiveDateMonth} ${archiveDate.archiveDateYear} 
+                        <#else>
+                        ${archiveDate.archiveDateYear} ${yearLabel} ${archiveDate.archiveDateMonth} ${monthLabel}
+                        </#if>
+                        ${sumLabel} ${archiveDate.archiveDatePublishedArticleCount} ${fightLabel}
+                    </span>
+                </section>
+                <#include "article-list.ftl">
+            </div>
+            <#include "side.ftl">
         </main>
-
+        <#include "footer.ftl">
     </body>
 </html>
